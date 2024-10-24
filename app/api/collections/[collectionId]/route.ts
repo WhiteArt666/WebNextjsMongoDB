@@ -3,13 +3,14 @@ import { connectToDB } from "@/lib/mongoDB";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import Collection from "@/lib/models/Collection";
+import Product from "@/lib/models/Product";
 
 export const GET =async (req: NextRequest, {params}: {params: {collectionId: string}}) => {
     try {
 
         await connectToDB()
 
-        const collection = await Collection.findById(params.collectionId)
+        const collection = await Collection.findById(params.collectionId).populate({ path: "products", model: Product });
 
         if(!collection){
             return new NextResponse(JSON.stringify({ message: "collection not found"}), {status:404})
@@ -79,4 +80,6 @@ export const DELETE = async (req: NextRequest, {params}: {params: {collectionId:
         console.log("[collectionId_DELETE]", err)
         return new NextResponse("Internal error",{ status: 500})
     }
-}
+};
+
+export const dynamic = "force-dynamic";
