@@ -4,7 +4,9 @@ module.exports = {
       'eslint:recommended',
       'plugin:@typescript-eslint/recommended',
       'plugin:next/recommended', // Thêm dòng này
+      
    ],
+   plugins: ['next'],
    rules: {
       "@typescript-eslint/no-empty-object-type": "off",
       "@typescript-eslint/no-unused-vars": "off",
