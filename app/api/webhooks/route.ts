@@ -1,15 +1,14 @@
 import Customer from "@/lib/models/Customer";
 import Order from "@/lib/models/Order";
 import { connectToDB } from "@/lib/mongoDB";
-import { TRACE_OUTPUT_VERSION } from "next/dist/shared/lib/constants";
 import { NextRequest, NextResponse } from "next/server";
-import { Stripe } from "stripe";
+import Stripe from "stripe";
 
-export const stripe = new Stripe(process.env.NEXT_PUBLIC_STRIPE_SECRET_KEY! ,{
-typescript: true,
+const stripe = new Stripe(process.env.NEXT_PUBLIC_STRIPE_SECRET_KEY!, {
+  typescript: true,
 })
 
-export const POST = async (req: NextRequest) => {
+export async function POST(req: NextRequest) {
     try {
       const rawBody = await req.text()
       const signature = req.headers.get("Stripe-Signature") as string
@@ -21,8 +20,7 @@ export const POST = async (req: NextRequest) => {
       )
   
       if (event.type === "checkout.session.completed") {
-        const session = event.data.object
-        console.log("[]webhook_POST", session)
+        const session = event.data.object as Stripe.Checkout.Session
   
         const customerInfo = {
           clerkId: session?.client_reference_id,
@@ -43,16 +41,17 @@ export const POST = async (req: NextRequest) => {
           { expand: ["line_items.data.price.product"]}
         )
   
-        const lineItems = await retrieveSession?.line_items?.data
+        const lineItems = retrieveSession.line_items?.data
   
-        const orderItems = lineItems?.map((item: any) => {
+        const orderItems = lineItems?.map((item) => {
+          const priceProduct = item.price?.product as Stripe.Product
           return {
-            product: item.price.product.metadata.productId,
-            color: item.price.product.metadata.color || "N/A",
-            size: item.price.product.metadata.size || "N/A",
+            product: priceProduct.metadata.productId,
+            color: priceProduct.metadata.color || "N/A",
+            size: priceProduct.metadata.size || "N/A",
             quantity: item.quantity,
           }
-        })
+        }) || []
   
         await connectToDB()
   
@@ -80,9 +79,12 @@ export const POST = async (req: NextRequest) => {
         await customer.save()
       }
   
-      return new NextResponse("Order created", { status: 200 })
+      return NextResponse.json({ message: "Order created" }, { status: 200 })
     } catch (err) {
       console.log("[webhooks_POST]", err)
-      return new NextResponse("Failed to create the order", { status: 500 })
+      return NextResponse.json({ message: "Failed to create the order" }, { status: 500 })
     }
-  }
+}
+
+// Remove or comment out the export of `stripe` if not needed elsewhere
+export const dynamic = 'force-dynamic'

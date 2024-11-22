@@ -4,79 +4,70 @@ import { NextRequest, NextResponse } from "next/server";
 import Collection from "@/lib/models/Collection";
 import Product from "@/lib/models/Product";
 
-export const GET =async (req: NextRequest, {params}: {params: {collectionId: string}}) => {
+export const GET = async (req: NextRequest, {params}: {params: {collectionId: string}}) => {
     try {
-
         await connectToDB()
-
         const collection = await Collection.findById(params.collectionId).populate({ path: "products", model: Product });
-
+        
         if(!collection){
-            return new NextResponse(JSON.stringify({ message: "collection not found"}), {status:404})
+            return NextResponse.json({ message: "Collection not found"}, {status: 404})
         }
-
-        return NextResponse.json(collection, {status:500})
-
-         
-
+        
+        return NextResponse.json(collection, {status: 200})
     } catch (err){
         console.log("[collectionId_GET]", err)
-        return new Response("Internal error",{ status: 500})
+        return NextResponse.json({ error: "Internal error" }, { status: 500 })
     }
 }
 
-export const POST = async (req: NextRequest, {params}: {params: {collectionId: string}}) =>{
+export const POST = async (req: NextRequest, { params }: { params: { collectionId: string } }) => {
+    const { userId } = auth();
+    if (!userId) {
+        return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+    
+    let collection = await Collection.findById(params.collectionId);
+    if (!collection) {
+        return NextResponse.json({ message: "Collection not found" }, { status: 404 });
+    }
+    
     try {
-        const {userId} = auth()
-
-        if(!userId){
-            return new NextResponse("Unauthorized", {status:401})
-        }
-
-        await connectToDB()
-
-        let collection = await Collection.findById(params.collectionId)
-
-        if(!collection){
-            return new NextResponse("collection not found"), {status:404}
-        }
-
-        const {title, description, image} = await req.json()
-
+        const { title, description, image } = await req.json()
+        
         if(!title || !image){
-            return new NextResponse("TIt and Image Not required"), {status:400}
+            return NextResponse.json({ message: "Title and Image are required" }, { status: 400 });
         }
-
+        
         collection = await Collection.findByIdAndUpdate(
             params.collectionId,
             { title, description, image },
             { new: true }
-          );
+        );
         
         await collection.save()
         
-        return NextResponse.json(collection, {status: 500})
-
-    } catch (err){
-        console.log("[collectionId_POST]",err)
-        return new Response("Internal error", { status: 500 })
+        return NextResponse.json({ success: true }, { status: 200 })
+    } catch (error) {
+        console.error("[collectionId_POST]", error);
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
 
 export const DELETE = async (req: NextRequest, { params }: { params: { collectionId: string } }) => {
     try {
         const { userId } = auth()
-        if (!userId) {
-            return new Response("Unauthorized", { status: 401 })
+        if(!userId){
+            return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
         }
+        
         await connectToDB()
-
         await Collection.findByIdAndDelete(params.collectionId)
-        return new Response("collection is deleted", { status: 200 })
+        
+        return NextResponse.json({ message: "Collection is deleted" }, { status: 200 })
     } catch (err) {
-        console.log("[collectionId_DELETE]", err)
-        return new Response("Internal error", { status: 500 })
+        console.log("[collectionId_DELETE]", err);
+        return NextResponse.json({ error: "Internal error" }, { status: 500 });
     }
-};
+}
 
 export const dynamic = "force-dynamic";
