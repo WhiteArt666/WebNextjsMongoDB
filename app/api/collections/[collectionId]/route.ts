@@ -1,4 +1,3 @@
-
 import { connectToDB } from "@/lib/mongoDB";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
@@ -66,19 +65,19 @@ export const POST = async (req: NextRequest, {params}: {params: {collectionId: s
     }
 }
 
-export const DELETE = async (req: NextRequest, {params}: {params: {collectionId: string}}) => {
+export const DELETE = async (req: NextRequest, { params }: { params: { collectionId: string } }) => {
     try {
         const { userId } = auth()
-        if(!userId){
-            return new NextResponse("Unauthorized", {status:401})
+        if (!userId) {
+            return new Response("Unauthorized", { status: 401 })
         }
         await connectToDB()
 
         await Collection.findByIdAndDelete(params.collectionId)
-        return new Response("collection is deleted", {status:200})
+        return new Response("collection is deleted", { status: 200 })
     } catch (err) {
         console.log("[collectionId_DELETE]", err)
-        return new NextResponse("Internal error",{ status: 500})
+        return new Response("Internal error", { status: 500 })
     }
 };
 
