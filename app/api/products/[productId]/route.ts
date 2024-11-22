@@ -70,6 +70,9 @@ export const POST = async (
       colors,
       price,
       expense,
+      discount, // Add discount field
+      quantity, // Add quantity field
+      variants, // Thêm variants vào đây
     } = await req.json();
 
     if (!title || !description || !media || !category || !price || !expense) {
@@ -105,7 +108,7 @@ export const POST = async (
       ),
     ]);
 
-    // Update product
+    // Update product with variant
     const updatedProduct = await Product.findByIdAndUpdate(
       product._id,
       {
@@ -119,11 +122,16 @@ export const POST = async (
         colors,
         price,
         expense,
+        discount, // Add discount field
+        quantity, // Add quantity field
+        variants: variants || [], // Thêm variants vào đây
       },
       { new: true }
     ).populate({ path: "collections", model: Collection });
 
     await updatedProduct.save();
+
+    console.log(updatedProduct);
 
     return NextResponse.json(updatedProduct, { status: 200 });
   } catch (err) {

@@ -8,14 +8,18 @@ export const columns: ColumnDef<OrderItemType>[] = [
     accessorKey: "product",
     header: "Product",
     cell: ({ row }) => {
+      const product = row.original.product;
+      if(product){
       return (
         <Link
-          href={`/products/${row.original.product._id}`}
+          href={`/products/${product._id}`}
           className="hover:text-red-1"
         >
           {row.original.product.title}
         </Link>
       );
+    }
+    return '`No product found`';
     },
   },
   {

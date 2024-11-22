@@ -22,6 +22,11 @@ const orderSchema = new mongoose.Schema({
   },
   shippingRate: String,
   totalAmount: Number,
+  status: {
+    type: String,
+    enum: ["Pending Confirmation", "In Transit", "Delivered"],
+    default: "Pending Confirmation",
+  },
   createdAt: {
     type: Date,
     default: Date.now,

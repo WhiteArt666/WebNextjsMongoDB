@@ -27,7 +27,23 @@ export const POST = async (req: NextRequest) => {
       colors,
       price,
       expense,
+      discount, // Add discount field
+      quantity, // Add quantity field
+      variants, // Thêm variants vào đây
     } = await req.json();
+
+    if (variants && variants.length > 0) {
+      const isValidVariants = variants.every((variant: any) =>
+        variant.size &&
+        variant.color &&
+        typeof variant.price === 'number' &&
+        variant.price >= 0.1
+      );
+
+      if (!isValidVariants) {
+        return new NextResponse("Invalid variants data", { status: 400 });
+      }
+    }
 
     if (!title || !description || !media || !category || !price || !expense) {
       return new NextResponse("Not enough data to create a product", {
@@ -46,9 +62,14 @@ export const POST = async (req: NextRequest) => {
       colors,
       price,
       expense,
+      discount, // Add discount field
+      quantity, // Add quantity field
+      variants: variants || [], // Thêm variants vào đây
     });
 
     await newProduct.save();
+
+    console.log(newProduct);
 
     if (collections) {
       for (const collectionId of collections) {
@@ -75,7 +96,10 @@ export const GET = async (req: NextRequest) => {
       .sort({ createdAt: "desc" })
       .populate({ path: "collections", model: Collection });
 
-    return NextResponse.json(products, { status: 200 });
+    // return NextResponse.json(products, { status: 200 });
+    const response = NextResponse.json(products, { status: 200 });
+    response.headers.set('Access-Control-Allow-Origin', '*'); // Thêm dòng này
+    return response;
   } catch (err) {
     console.log("[products_GET]", err);
     return new NextResponse("Internal Error", { status: 500 });

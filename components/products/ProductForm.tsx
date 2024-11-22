@@ -22,6 +22,7 @@ import toast from "react-hot-toast"
 import Delete from "../custom ui/Delete"
 import MultiText from "../custom ui/MultiText"
 import MultiSelect from "../custom ui/MultiSelect"
+import ProductVariants from "./ProductVariants"
 
 
 const formSchema = z.object({
@@ -35,10 +36,18 @@ const formSchema = z.object({
   colors: z.array(z.string()),
   price: z.coerce.number().min(0.1),
   expense: z.coerce.number().min(0.1),
+  discount: z.coerce.number().min(0).max(100).default(0), // Add discount field
+  quantity: z.coerce.number().min(1).default(1), // Add quantity field
+  variants: z.array(z.object({
+    size: z.string(),
+    color: z.string(),
+    price: z.coerce.number().min(0.1),
+  })),
 })
 interface ProductFormProps {
   initialData?: ProductType | null;
 }
+
 
 
 const ProductForm: React.FC<ProductFormProps> = ({ initialData }) => {
@@ -75,6 +84,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData }) => {
         collections: initialData.collections.map(
           (collection) => collection._id
         ),
+        variants: initialData.variants || [], // Thêm dòng này
       }
       : {
         title: "",
@@ -87,6 +97,9 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData }) => {
         colors: [],
         price: 0.1,
         expense: 0.1,
+        discount: 0, // Add default value for discount
+        quantity: 1, // Add default value for quantity
+        variants: [], // Thêm dòng này
       },
   });
 
@@ -211,6 +224,32 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData }) => {
             />
             <FormField
               control={form.control}
+              name="discount"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Discount (%)</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="Discount" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="quantity"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Quantity</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="Quantity" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
               name="category"
               render={({ field }) => (
                 <FormItem>
@@ -325,6 +364,28 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData }) => {
                 </FormItem>
               )}
             />
+
+            <FormField
+              control={form.control}
+              name="variants"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Size/Color Variants</FormLabel>
+                  <FormControl>
+                    <ProductVariants
+                      variants={field.value}
+                      onChange={field.onChange}
+                      sizes={form.watch('sizes')}
+                      colors={form.watch('colors')}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+
+
           </div>
           <div className="flex gap-10">
             <Button type="submit" className="bg-blue-1 text-white">Submit</Button>

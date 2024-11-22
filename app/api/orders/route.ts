@@ -18,10 +18,11 @@ export const GET = async (req: NextRequest) => {
         customer: customer.name,
         products: order.products.length,
         totalAmount: order.totalAmount,
+        status: order.status, // Thêm trạng thái đơn hàng
         createdAt: format(order.createdAt, "MMM do, yyyy")
       }
     }))
-
+    console.log("Đơn hàng trả về:", orderDetails); // Thêm dòng này để kiểm tra
     return NextResponse.json(orderDetails, { status: 200 });
   } catch (err) {
     console.log("[orders_GET]", err)
