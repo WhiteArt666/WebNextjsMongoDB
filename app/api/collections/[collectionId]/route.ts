@@ -22,7 +22,7 @@ export const GET =async (req: NextRequest, {params}: {params: {collectionId: str
 
     } catch (err){
         console.log("[collectionId_GET]", err)
-        return new NextResponse("Internal error",{ status: 500})
+        return new Response("Internal error",{ status: 500})
     }
 }
 
@@ -75,7 +75,7 @@ export const DELETE = async (req: NextRequest, {params}: {params: {collectionId:
         await connectToDB()
 
         await Collection.findByIdAndDelete(params.collectionId)
-        return new NextResponse("collection is deleted", {status:200})
+        return new Response("collection is deleted", {status:200})
     } catch (err) {
         console.log("[collectionId_DELETE]", err)
         return new NextResponse("Internal error",{ status: 500})
