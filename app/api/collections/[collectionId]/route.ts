@@ -57,11 +57,9 @@ export const POST = async (req: NextRequest, {params}: {params: {collectionId: s
         
         return NextResponse.json(collection, {status: 500})
 
-
-
     } catch (err){
         console.log("[collectionId_POST]",err)
-        return new NextResponse("Internal error",{ status: 500})
+        return new Response("Internal error", { status: 500 })
     }
 }
 
